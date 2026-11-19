@@ -142,11 +142,6 @@ def run_experiment(args) -> dict:
         gate_init=args.gate_init,
         windows=args.windows,
         dropout=args.dropout,
-        use_cycle=not args.no_cycle,
-        use_cobim=not args.no_cobim,
-        bidirectional=not args.unidirectional,
-        use_context=not args.no_context,
-        a24_readout="gru" if args.a24_gru else "attention",
     ).to(device)
 
     num_params = sum(p.numel() for p in model.parameters())

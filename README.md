@@ -70,16 +70,6 @@ You can override `DATA_DIR` and `DEVICE` via environment variables:
 DATA_DIR=/path/to/dataset DEVICE=cuda:0 bash scripts/run_etth1.sh
 ```
 
-### Ablation Flags
-
-The five architectural ablations in the paper can be run directly via CLI flags:
-
-- `--no_cobim`: removes the CoBiM block (`w/o CoBiM`)
-- `--unidirectional`: uses unidirectional causal mLSTM scanning (`UniMemory`)
-- `--no_context`: removes the global context branch (`w/o Context`)
-- `--no_cycle`: removes pre-pyramid cycle enhancement (`w/o Cycle`)
-- `--a24_gru`: replaces fine-scale self-attention with GRU (`A24-GRU`)
-
 ## Hyperparameters
 
 | Dataset | Variables | Cycle `P` | Batch Size | Backbone LR | Cycle LR | LR Schedule | Epochs | Patience | Select From |

@@ -22,7 +22,6 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     bias: bool = True
     dropout: float = 0.4
     context_length: int = 512
-    variable_mask_mode: str = "bidirectional"
     _num_blocks: int = 1
     _inner_embedding_dim: int = None
 
@@ -60,7 +59,6 @@ class mLSTMLayer(nn.Module):
                 context_length=config.context_length,
                 embedding_dim=inner_dim,
                 num_heads=config.num_heads,
-                variable_mask_mode=config.variable_mask_mode,
             )
         )
         self.ogate_act_fn = nn.SiLU()

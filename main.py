@@ -29,13 +29,6 @@ def parse_args():
     parser.add_argument("--gate_init", type=float, default=0.3, help="Initial cycle residual gate tanh(g_0).")
     parser.add_argument("--dropout", type=float, default=0.4, help="Dropout probability inside CoBiM.")
 
-    # Ablation switches
-    parser.add_argument("--no_cycle", action="store_true", help="Disable pre-pyramid cycle enhancement (w/o Cycle).")
-    parser.add_argument("--no_cobim", action="store_true", help="Remove CoBiM block (w/o CoBiM).")
-    parser.add_argument("--unidirectional", action="store_true", help="Use unidirectional causal mLSTM (UniMemory).")
-    parser.add_argument("--no_context", action="store_true", help="Disable global context modulation (w/o Context).")
-    parser.add_argument("--a24_gru", action="store_true", help="Replace fine-scale self-attention with GRU (A24-GRU).")
-
     # Optimization
     parser.add_argument("--seed", type=int, default=2025, help="Random seed.")
     parser.add_argument("--batch_size", type=int, default=None, help="Effective training batch size.")

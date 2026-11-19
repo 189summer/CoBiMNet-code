@@ -157,14 +157,10 @@ class PyramidalHybridEncoder(nn.Module):
         windows: Sequence[int] = (24, 48, 72, 144),
         d_model: int = 512,
         conv_channels: int = 128,
-        a24_readout: str = "attention",
         attn_heads: int = 4,
         attn_dropout: float = 0.1,
     ):
         super().__init__()
-        if a24_readout not in ("attention", "gru"):
-            raise ValueError(f"Unsupported a24_readout: {a24_readout}")
-
         self.seq_len = seq_len
         self.windows = list(windows)
         self.chains = split_window_chains(self.windows)
@@ -188,7 +184,7 @@ class PyramidalHybridEncoder(nn.Module):
                 hid_dim = self.hid_dims[scale]
                 total_concat_dim += hid_dim
 
-                if chain_idx == 0 and level_idx == 0 and a24_readout == "attention":
+                if chain_idx == 0 and level_idx == 0:
                     num_tokens = seq_len // scale
                     eff_heads = next(h for h in range(attn_heads, 0, -1) if hid_dim % h == 0)
                     readout = FineScaleAttentionReadout(
@@ -254,7 +250,7 @@ class PyramidalHybridEncoder(nn.Module):
 
 
 class CyPHE(nn.Module):
-    """Cycle-Enhanced Pyramidal Hybrid Encoder."""
+    """Cycle-enhanced Pyramidal Hybrid Encoder."""
 
     def __init__(
         self,
@@ -265,29 +261,21 @@ class CyPHE(nn.Module):
         gate_init: float = 0.3,
         windows: Sequence[int] = (24, 48, 72, 144),
         d_model: int = 512,
-        use_cycle: bool = True,
-        a24_readout: str = "attention",
     ):
         super().__init__()
-        self.cycle_enhancement = (
-            CycleEnhancement(
-                seq_len=seq_len,
-                enc_in=enc_in,
-                cycle_len=cycle_len,
-                period_len=period_len,
-                gate_init=gate_init,
-            )
-            if use_cycle
-            else None
+        self.cycle_enhancement = CycleEnhancement(
+            seq_len=seq_len,
+            enc_in=enc_in,
+            cycle_len=cycle_len,
+            period_len=period_len,
+            gate_init=gate_init,
         )
         self.pyramid = PyramidalHybridEncoder(
             seq_len=seq_len,
             windows=windows,
             d_model=d_model,
-            a24_readout=a24_readout,
         )
 
-    def forward(self, x_norm: torch.Tensor, cycle_index: torch.Tensor = None) -> torch.Tensor:
-        if self.cycle_enhancement is not None:
-            x_norm = self.cycle_enhancement(x_norm, cycle_index)
-        return self.pyramid(x_norm)
+    def forward(self, x_norm: torch.Tensor, cycle_index: torch.Tensor) -> torch.Tensor:
+        x_aug = self.cycle_enhancement(x_norm, cycle_index)
+        return self.pyramid(x_aug)

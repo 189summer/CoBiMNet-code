@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import torch
 from torch import nn
 
-from .backends import bidirectional_stabilized_simple, parallel_stabilized_simple
+from .backends import bidirectional_stabilized_simple
 from .components.init import bias_linspace_init_
 from .components.ln import MultiHeadLayerNorm
 
@@ -15,7 +15,6 @@ class mLSTMCellConfig:
     context_length: int = -1
     embedding_dim: int = -1
     num_heads: int = -1
-    variable_mask_mode: str = "bidirectional"
 
 
 class mLSTMCell(nn.Module):
@@ -24,13 +23,7 @@ class mLSTMCell(nn.Module):
     def __init__(self, config: mLSTMCellConfig):
         super().__init__()
         self.config = config
-        if config.variable_mask_mode not in ("causal", "bidirectional"):
-            raise ValueError(f"Unknown variable_mask_mode: {config.variable_mask_mode}")
-        self.backend_fn = (
-            bidirectional_stabilized_simple
-            if config.variable_mask_mode == "bidirectional"
-            else parallel_stabilized_simple
-        )
+        self.backend_fn = bidirectional_stabilized_simple
 
         self.igate = nn.Linear(3 * config.embedding_dim, config.num_heads)
         self.fgate = nn.Linear(3 * config.embedding_dim, config.num_heads)

@@ -38,7 +38,7 @@ class ContextExtractor(nn.Module):
 
 
 class CoBiM(nn.Module):
-    """Context-Guided Bidirectional Variable Memory module."""
+    """Context-Guided Bidirectional Memory module."""
 
     def __init__(
         self,
@@ -49,8 +49,6 @@ class CoBiM(nn.Module):
         qkv_proj_blocksize: int = 4,
         proj_factor: float = 1.0,
         dropout: float = 0.4,
-        bidirectional: bool = True,
-        use_context: bool = True,
     ):
         super().__init__()
         self.memory = mLSTMLayer(
@@ -63,17 +61,12 @@ class CoBiM(nn.Module):
                 bias=True,
                 dropout=dropout,
                 context_length=context_length,
-                variable_mask_mode="bidirectional" if bidirectional else "causal",
             )
         )
-        self.context = ContextExtractor(d_model, inplanes=8, ratio=0.5) if use_context else None
+        self.context = ContextExtractor(d_model, inplanes=8, ratio=0.5)
         self.layer_norm = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, h: torch.Tensor) -> torch.Tensor:
-        mem = self.memory(h)
-        if self.context is not None:
-            u = mem * self.context(h) + h
-        else:
-            u = mem + h
+        u = self.memory(h) * self.context(h) + h
         return self.dropout(self.layer_norm(u) + h)
